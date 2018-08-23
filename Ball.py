@@ -2,6 +2,18 @@ import math, numpy as np, scipy as sp
 import scipy.optimize as opt
 
 
+def principleRadianAngle(angle):
+    if angle > 2 * math.pi:
+        while (angle > 2 * math.pi):
+            angle = angle - 2 * math.pi
+        return angle
+    elif angle < 0:
+        while (angle < 0):
+            angle = angle + 2 * math.pi
+        return angle
+    else:
+        return angle
+
 class Ball:
     x = 0.0
     y = 0.0
@@ -12,7 +24,7 @@ class Ball:
     collisionSpeedX = 0.0
     collisionSpeedY = 0.0
     timeDelta = 0.01  # s
-    friction = 0.9  # (m/s^2)
+    friction = 0.009  # (m/s^2)
 
     def __init__(self, x, y):
         self.x = x
@@ -33,23 +45,25 @@ class Ball:
         self.angle = angle
 
     def updatePosition(self):
-        self.x = self.x + self.speed * math.cos(self.angle) * self.timeDelta
-        self.y = self.y + self.speed * math.sin(self.angle) * self.timeDelta
-        self.speed = self.speed - self.friction * self.timeDelta
+        if self.speed > 0.02:
+            self.x = self.x + self.speed * math.cos(self.angle) * self.timeDelta
+            self.y = self.y + self.speed * math.sin(self.angle) * self.timeDelta
+            self.speed = self.speed - self.friction * self.timeDelta
 
     def collide(self, ball2):
         distance = math.sqrt((self.x - ball2.x) ** 2 + (self.y - ball2.y) ** 2)
         if distance <= 2 * self.rad:
-            angleNormal = math.atan2((ball2.y - self.y), (ball2.x - self.x))
+            angleNormal = principleRadianAngle(math.atan2((ball2.y - self.y), (ball2.x - self.x)))
             angleTangent = 0.0
             totalSpeedSquared = self.speed ** 2 + ball2.speed ** 2
             if self.angle > angleNormal:
                 angleTangent = angleNormal + math.pi / 2
             else:
                 angleTangent = angleNormal - math.pi / 2
-            self.speed = self.speed * math.cos(angleTangent - self.angle) + ball2.speed * math.cos(
-                angleTangent - ball2.angle)
-            ball2.speed = math.sqrt(totalSpeedSquared - self.speed ** 2)
+            angleTangent = principleRadianAngle(angleTangent)
+            self.speed = math.fabs(self.speed * math.cos(angleTangent - self.angle) + ball2.speed * math.cos(
+                angleTangent - ball2.angle))
+            ball2.speed = math.fabs(math.sqrt(totalSpeedSquared - self.speed ** 2))
             self.angle = angleTangent
             ball2.angle = angleNormal
             self.updatePosition()
@@ -105,10 +119,10 @@ class BlackBall(Ball):
 
 
 def main():
-    b = Ball(40, 5)
+    b = Ball(20, 0.8)
     c = Ball(20, 14.99)
-    b.shoot(10, math.pi)
-    print("Ball speeds.")
+    b.shoot(10, math.pi * 1 / 2)
+    print("Initial Ball Speeds.")
     print(b.speed, b.angleDegree())
     print(c.speed, c.angleDegree())
     while math.sqrt((b.x - c.x) ** 2 + (b.y - c.y) ** 2) > 2 * b.rad:
