@@ -1,6 +1,6 @@
-import math, numpy as np, scipy as sp
-import scipy.optimize as opt
+import math
 
+BALL_RADIUS = 5.0  # m
 
 def principleRadianAngle(angle):
     if angle > 2 * math.pi:
@@ -17,18 +17,20 @@ def principleRadianAngle(angle):
 class Ball:
     x = 0.0
     y = 0.0
-    rad = 5.0  # m
+    id = 0
+    rad = BALL_RADIUS  # m
     speed = 0.0  # m/s
     angle = 0.0  # rads
     pocketed = False
     collisionSpeedX = 0.0
     collisionSpeedY = 0.0
-    timeDelta = 0.01  # s
-    friction = 0.009  # (m/s^2)
+    timeDelta = 0.1  # s
+    friction = 0.09  # (m/s^2)
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, id):
         self.x = x
         self.y = y
+        self.id = id  # 1-7 are stripes, 8-14 are solids (1-7), blackball is 15
 
     def speedX(self):
         return math.cos(self.angle) * self.speed
@@ -61,13 +63,19 @@ class Ball:
             else:
                 angleTangent = angleNormal - math.pi / 2
             angleTangent = principleRadianAngle(angleTangent)
-            self.speed = math.fabs(self.speed * math.cos(angleTangent - self.angle) + ball2.speed * math.cos(
-                angleTangent - ball2.angle))
+            # print(self.speed)
+            if (math.fabs(self.speed * math.cos(angleTangent - self.angle) + ball2.speed * math.cos(
+                    angleTangent - ball2.angle)) < self.speed):
+                self.speed = math.fabs(self.speed * math.cos(angleTangent - self.angle) + ball2.speed * math.cos(
+                    angleTangent - ball2.angle))
+            #print(self.speed)
             ball2.speed = math.fabs(math.sqrt(totalSpeedSquared - self.speed ** 2))
             self.angle = angleTangent
             ball2.angle = angleNormal
             self.updatePosition()
             ball2.updatePosition()
+        else:
+            self.updatePosition()
         # distance = math.sqrt((self.x - ball2.x) ** 2 + (self.y - ball2.y) ** 2)
         # if distance <= 2 * self.rad:
         #     self.collisionSpeedX = self.speed*math.cos(self.angle)+ball2.speed*math.cos(ball2.angle)
@@ -102,25 +110,25 @@ class Ball:
 
 class Stripes(Ball):
 
-    def __init__(self, x, y):
-        Ball.__init__(self, x, y)
+    def __init__(self, x, y, id):
+        Ball.__init__(self, x, y, id)
 
 
 class Solids(Ball):
 
-    def __init__(self, x, y):
-        Ball.__init__(self, x, y)
+    def __init__(self, x, y, id):
+        Ball.__init__(self, x, y, id -7)
 
 
 class BlackBall(Ball):
 
-    def __init__(self, x, y):
-        Ball.__init__(self, x, y)
+    def __init__(self, x, y, id):
+        Ball.__init__(self, x, y, id)
 
 
 def main():
-    b = Ball(20, 0.8)
-    c = Ball(20, 14.99)
+    b = Ball(20, 0.8, 1)
+    c = Ball(20, 14.99,2)
     b.shoot(10, math.pi * 1 / 2)
     print("Initial Ball Speeds.")
     print(b.speed, b.angleDegree())
