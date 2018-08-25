@@ -26,7 +26,7 @@ def setRandomBalls():
     width = TABLE_WIDTH
     height = TABLE_HEIGHT
     firstPos = [300 / 400 * TABLE_WIDTH, 100 / 200 * TABLE_HEIGHT]  # first ball standardized by table dimensions
-    spacing = 0.05 * BALL_RADIUS  # times the Radius, vertical spacing between balls
+    spacing = 0.1 * BALL_RADIUS  # times the Radius, vertical spacing between balls
     positions = []
     positions.append(firstPos)  # first column
     positions.append(
@@ -98,10 +98,17 @@ class Table:
             print(b1.speed, b1.angle * 180 / pi, b2.speed, b2.angle * 180 / pi)
 
             while (distance <= 2 * BALL_RADIUS):  # To split up the two balls
+                x1 = b1.x
+                y1 = b1.y
+                x2 = b2.x
+                y2 = b2.y
                 b1.updatePosition()
                 b2.updatePosition()
                 distance = np.sqrt((b1.x - b2.x) ** 2 + (b1.y - b2.y) ** 2)
                 print(b1.id, b1.x, b1.y, b2.id, b2.x, b2.y)
+                if b1.distance(Ball.Ball(x1, y1, -5)) / b1.timeDelta < 0.1 and b2.distance(
+                        Ball.Ball(x2, y2, -5)) / b2.timeDelta < 0.1:
+                    break
         # elif distance <= 2 * BALL_RADIUS and (b1.speed>0.02 or b2.speed>0.02):
         #     if b1.speed>0.02:
         #         movingBall = b1

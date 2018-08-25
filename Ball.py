@@ -24,7 +24,7 @@ class Ball:
     pocketed = False
     collisionSpeedX = 0.0
     collisionSpeedY = 0.0
-    timeDelta = 0.01  # s
+    timeDelta = 0.001  # s
     friction = 0.09  # (m/s^2)
 
     def __init__(self, x, y, id):
