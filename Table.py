@@ -71,9 +71,61 @@ class Table:
     width = TABLE_WIDTH
     height = TABLE_HEIGHT
     balls = setRandomBalls()
+    whiteBall = Ball.WhiteBall(TABLE_WIDTH / 4, TABLE_HEIGHT / 2)
 
     def __init__(self):
         pass
+
+    def checkCollisionWall(self, ball):
+
+        left = ball.x - BALL_RADIUS
+        right = ball.x + BALL_RADIUS
+        up = ball.y + BALL_RADIUS
+        down = ball.y - BALL_RADIUS
+        refAngle = 0  # angle of reflection between ball and wall
+        if (left <= 0):
+            if (ball.angle > pi):
+                refAngle = ball.angle - pi
+                ball.angle = Ball.principleRadianAngle(pi * 3 / 2.0 + refAngle)
+            else:
+                refAngle = pi - ball.angle
+                ball.angle = Ball.principleRadianAngle(pi / 2.0 - refAngle)
+        elif right >= TABLE_WIDTH:
+            if ball.angle < pi / 2.0:
+                refAngle = ball.angle
+                ball.angle = Ball.principleRadianAngle(pi / 2.0 + refAngle)
+            else:
+                refAngle = 2 * pi - ball.angle
+                ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 - refAngle)
+        elif up >= TABLE_HEIGHT:
+            print("Wall collision")
+            if ball.angle < pi / 2.0:
+                refAngle = pi / 2.0 - ball.angle
+                ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 + refAngle)
+            else:
+                refAngle = ball.angle - pi / 2.0
+                ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 - refAngle)
+        elif down <= 0:
+            print("Wall collision")
+            if ball.angle > 3 * pi / 2.0:
+                refAngle = ball.angle - 3 * pi / 2.0
+                ball.angle = Ball.principleRadianAngle(refAngle)
+            else:
+                refAngle = 3 * pi / 2.0 - ball.angle
+                ball.angle = Ball.principleRadianAngle(pi - refAngle)
+
+        while (left < 0 or right > TABLE_WIDTH or down < 0 or up > TABLE_HEIGHT):
+            x1 = ball.x
+            y1 = ball.y
+            ball.updatePosition()
+            if ball.distance(Ball.Ball(x1, y1, -5)) / ball.timeDelta < 0.1:
+                break
+            left = ball.x - BALL_RADIUS
+            right = ball.x + BALL_RADIUS
+            up = ball.y + BALL_RADIUS
+            down = ball.y - BALL_RADIUS
+
+
 
     def checkCollision2Balls(self, b1, b2):
         distance = np.sqrt((b1.x - b2.x) ** 2 + (b1.y - b2.y) ** 2)
@@ -150,7 +202,7 @@ def main():
     for i in np.arange(15):
         print(t.balls[i], t.balls[i].x, t.balls[i].y, t.balls[i].id)
 
-    t.balls[0].shoot(10, math.pi /6)
+    t.whiteBall.shoot(10, 0)
 
     while (any(ball.speed >= 0.02 for ball in t.balls)):
         for i in np.arange(15):

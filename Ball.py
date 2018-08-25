@@ -24,7 +24,7 @@ class Ball:
     pocketed = False
     collisionSpeedX = 0.0
     collisionSpeedY = 0.0
-    timeDelta = 0.001  # s
+    timeDelta = 0.01  # s
     friction = 0.09  # (m/s^2)
 
     def __init__(self, x, y, id):
@@ -44,10 +44,7 @@ class Ball:
     def angleDegree(self):
         return self.angle * 180 / math.pi
 
-    def shoot(self, power,
-              angle):  # power in m/s converted from N because all mass is the same, angle in radians starting from east 0 rads
-        self.speed = power
-        self.angle = angle
+
 
     def updatePosition(self):
         if self.speed > 0.02:
@@ -141,8 +138,13 @@ class WhiteBall(Ball):
     def __init__(self, x, y):
         Ball.__init__(self, x, y, -1)
 
+    def shoot(self, power,
+              angle):  # power in m/s converted from N because all mass is the same, angle in radians starting from east 0 rads
+        self.speed = power
+        self.angle = angle
+
 def main():
-    b = Ball(20, 0.8, 1)
+    b = WhiteBall(20, 0.8, 1)
     c = Ball(20, 14.99,2)
     b.shoot(10, math.pi * 1 / 2)
     print("Initial Ball Speeds.")
