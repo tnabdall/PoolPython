@@ -2,7 +2,7 @@ import numpy as np
 import Ball
 import math
 from Ball import BALL_RADIUS, Stripes, Solids, BlackBall
-from numpy import pi
+from numpy import pi, sqrt
 TABLE_WIDTH = 400
 TABLE_HEIGHT = 200
 
@@ -25,28 +25,28 @@ def getReferenceAngleRadians(angle):  # Gives reference angle in radians given r
 def setRandomBalls():
     width = TABLE_WIDTH
     height = TABLE_HEIGHT
-    firstPos = [250 / 400 * TABLE_WIDTH, 100 / 200 * TABLE_HEIGHT]  # first ball standardized by table dimensions
+    firstPos = [300 / 400 * TABLE_WIDTH, 100 / 200 * TABLE_HEIGHT]  # first ball standardized by table dimensions
     spacing = 0.05 * BALL_RADIUS  # times the Radius, vertical spacing between balls
     positions = []
     positions.append(firstPos)  # first column
     positions.append(
-        [firstPos[0] + BALL_RADIUS, firstPos[1] + 2 * BALL_RADIUS * np.sin(np.pi / 3) + spacing])  # second column
-    positions.append([firstPos[0] + BALL_RADIUS, firstPos[1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[1][0] + BALL_RADIUS,
-                      positions[1][1] + 2 * BALL_RADIUS * np.sin(np.pi / 3) + spacing])  # third column
-    positions.append([positions[1][0] + BALL_RADIUS, positions[1][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[1][0] + BALL_RADIUS, positions[2][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[3][0] + BALL_RADIUS,
-                      positions[3][1] + 2 * BALL_RADIUS * np.sin(np.pi / 3) + spacing])  # fourth column
-    positions.append([positions[3][0] + BALL_RADIUS, positions[3][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[3][0] + BALL_RADIUS, positions[5][1] + 2 * BALL_RADIUS * np.sin(np.pi / 3) + spacing])
-    positions.append([positions[3][0] + BALL_RADIUS, positions[5][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[6][0] + BALL_RADIUS,
-                      positions[6][1] + 2 * BALL_RADIUS * np.sin(np.pi / 3) + spacing])  # fifth column
-    positions.append([positions[6][0] + BALL_RADIUS, positions[6][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[6][0] + BALL_RADIUS, positions[8][1] + 2 * BALL_RADIUS * np.sin(np.pi / 3) + spacing])
-    positions.append([positions[6][0] + BALL_RADIUS, positions[8][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
-    positions.append([positions[6][0] + BALL_RADIUS, positions[9][1] - 2 * BALL_RADIUS * np.sin(np.pi / 3) - spacing])
+        [firstPos[0] + sqrt(3) * BALL_RADIUS + spacing, firstPos[1] + BALL_RADIUS])  # second column
+    positions.append([firstPos[0] + sqrt(3) * BALL_RADIUS + spacing, firstPos[1] - BALL_RADIUS])
+    positions.append([positions[1][0] + sqrt(3) * BALL_RADIUS + spacing,
+                      positions[1][1] + sqrt(1) * BALL_RADIUS + spacing])  # third column
+    positions.append([positions[1][0] + sqrt(3) * BALL_RADIUS + spacing, positions[1][1] - sqrt(1) * BALL_RADIUS])
+    positions.append([positions[1][0] + sqrt(3) * BALL_RADIUS + spacing, positions[2][1] - sqrt(1) * BALL_RADIUS])
+    positions.append([positions[3][0] + sqrt(3) * BALL_RADIUS + spacing,
+                      positions[3][1] + sqrt(1) * BALL_RADIUS])  # fourth column
+    positions.append([positions[3][0] + sqrt(3) * BALL_RADIUS + spacing, positions[3][1] - sqrt(1) * BALL_RADIUS])
+    positions.append([positions[3][0] + sqrt(3) * BALL_RADIUS + spacing, positions[5][1] + sqrt(1) * BALL_RADIUS])
+    positions.append([positions[3][0] + sqrt(3) * BALL_RADIUS + spacing, positions[5][1] - sqrt(1) * BALL_RADIUS])
+    positions.append([positions[6][0] + sqrt(3) * BALL_RADIUS + spacing,
+                      positions[6][1] + sqrt(1) * BALL_RADIUS])  # fifth column
+    positions.append([positions[6][0] + sqrt(3) * BALL_RADIUS + spacing, positions[6][1] - sqrt(1) * BALL_RADIUS])
+    positions.append([positions[6][0] + sqrt(3) * BALL_RADIUS + spacing, positions[8][1] + sqrt(1) * BALL_RADIUS])
+    positions.append([positions[6][0] + sqrt(3) * BALL_RADIUS + spacing, positions[8][1] - sqrt(1) * BALL_RADIUS])
+    positions.append([positions[6][0] + sqrt(3) * BALL_RADIUS + spacing, positions[9][1] - sqrt(1) * BALL_RADIUS])
 
     randomizer = np.arange(1, 15)  # 1-14 (1-7 are stripes, 8-14 are solids (1-7))
     np.random.shuffle(randomizer)
@@ -78,7 +78,8 @@ class Table:
     def checkCollision2Balls(self, b1, b2):
         distance = np.sqrt((b1.x - b2.x) ** 2 + (b1.y - b2.y) ** 2)
 
-        if distance <= 2 * BALL_RADIUS and (b1.speed > 0.08 or b2.speed > 0.08):
+        if distance <= 2 * BALL_RADIUS and (
+                b1.speed > 0.08 or b2.speed > 0.08):  # Checks if collided and whether the balls are going at a huge speed that would make them overlap
             collisionAngle = math.atan2(b2.y - b1.y, b2.x - b1.x)
             vx1 = math.cos(collisionAngle) * (b2.speed * math.cos(b2.angle - collisionAngle)) - math.sin(
                 collisionAngle) * (b1.speed * math.sin(b1.angle - collisionAngle))
@@ -96,7 +97,7 @@ class Table:
             b2.angle = Ball.principleRadianAngle(math.atan2(vy2, vx2))
             print(b1.speed, b1.angle * 180 / pi, b2.speed, b2.angle * 180 / pi)
 
-            while (distance <= 2 * BALL_RADIUS):
+            while (distance <= 2 * BALL_RADIUS):  # To split up the two balls
                 b1.updatePosition()
                 b2.updatePosition()
                 distance = np.sqrt((b1.x - b2.x) ** 2 + (b1.y - b2.y) ** 2)
