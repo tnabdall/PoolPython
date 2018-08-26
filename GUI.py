@@ -3,13 +3,29 @@ import Ball
 from Ball import principleRadianAngle, BALL_RADIUS
 import Table
 from Table import TABLE_HEIGHT, TABLE_WIDTH
-from numpy import arange, sqrt, pi
+from numpy import arange, sqrt, pi, arctan2
 
 table = Table.Table()
 gameGUI = Tk()
 canvas = Canvas(gameGUI, width=400, height=200, background="spring green")
 ballsCanvas = []
 ballcoords = []
+
+shootCoords = []
+
+
+def shotClick(event):
+    shootCoords.append([event.x, event.y])
+
+
+def shotRelease(event):
+    shootCoords.append([event.x, event.y])
+    if (sqrt((shootCoords[0][1] - shootCoords[1][1]) ** 2 + (shootCoords[0][0] - shootCoords[1][0]) ** 2) > 10):
+        ang = arctan2(shootCoords[0][1] - shootCoords[1][1], shootCoords[0][0] - shootCoords[1][0])
+        pow = sqrt((shootCoords[0][1] - shootCoords[1][1]) ** 2 + (shootCoords[0][0] - shootCoords[1][0]) ** 2)
+        shoot(pow, ang)
+        gameGUI.after(int(0), animate)
+    shootCoords.clear()
 
 def drawBalls():
     for i in arange(len(table.balls)):  # Every ball but white
@@ -86,6 +102,8 @@ def main():
                            tag="w", fill="white"))  # add whiteBall
 
     canvas.tag_bind("w", "<Double-1>", shootClickWhiteBall)
+    canvas.tag_bind("w", "Button-1", shotClick)
+    canvas.tag_bind("w", "ButtonRelease-1", shotRelease)
 
     canvas.pack()
 
