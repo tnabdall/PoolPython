@@ -22,8 +22,8 @@ class Ball:
     speed = 0.0  # m/s
     angle = 0.0  # rads
     pocketed = False
-    timeDelta = 0.01  # s
-    friction = 0.09  # (m/s^2)
+    timeDelta = 0.1  # s
+    friction = 0.3  # (m/s^2)
     color = ""
 
     def __init__(self, x, y, id):
