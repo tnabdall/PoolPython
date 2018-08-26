@@ -22,15 +22,33 @@ class Ball:
     speed = 0.0  # m/s
     angle = 0.0  # rads
     pocketed = False
-    collisionSpeedX = 0.0
-    collisionSpeedY = 0.0
     timeDelta = 0.01  # s
     friction = 0.09  # (m/s^2)
+    color = ""
 
     def __init__(self, x, y, id):
         self.x = x
         self.y = y
         self.id = id  # 1-7 are stripes, 8-14 are solids (1-7), blackball is 15
+
+    def determineColor(self):
+        if self.id == -1:
+            self.color = "white"
+        elif self.id == 1:
+            self.color = "yellow"
+        elif self.id == 2:
+            self.color = "blue"
+        elif self.id == 3:
+            self.color = "red"
+        elif self.id == 4:
+            self.color = "purple"
+        elif self.id == 5:
+            self.color = "orange"
+        elif self.id == 6:
+            self.color = "green"
+        elif self.id == 7:
+            self.color = "red4"
+        pass  # based on ID
 
     def speedX(self):
         return math.cos(self.angle) * self.speed
@@ -116,27 +134,32 @@ class Stripes(Ball):
 
     def __init__(self, x, y, id):
         Ball.__init__(self, x, y, id)
+        self.determineColor()
 
 
 class Solids(Ball):
 
     def __init__(self, x, y, id):
         Ball.__init__(self, x, y, id -7)
+        self.determineColor()
 
 
 class BlackBall(Ball):
 
     def __init__(self, x, y):
         Ball.__init__(self, x, y, 8)
+        self.color = "black"
 
     def __init__(self, x, y, id):
         Ball.__init__(self, x, y, 8)
+        self.color = "black"
 
 
 class WhiteBall(Ball):
 
     def __init__(self, x, y):
         Ball.__init__(self, x, y, -1)
+        self.color = "white"
 
     def shoot(self, power,
               angle):  # power in m/s converted from N because all mass is the same, angle in radians starting from east 0 rads

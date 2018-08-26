@@ -84,35 +84,21 @@ class Table:
         down = ball.y - BALL_RADIUS
         refAngle = 0  # angle of reflection between ball and wall
         if (left <= 0):
-            if (ball.angle > pi):
-                refAngle = ball.angle - pi
-                ball.angle = Ball.principleRadianAngle(pi * 3 / 2.0 + refAngle)
-            else:
-                refAngle = pi - ball.angle
-                ball.angle = Ball.principleRadianAngle(pi / 2.0 - refAngle)
+            print("Wall collision LEFT")
+            refAngle = pi - ball.angle
+            ball.angle = Ball.principleRadianAngle(refAngle)
         elif right >= TABLE_WIDTH:
-            if ball.angle < pi / 2.0:
-                refAngle = ball.angle
-                ball.angle = Ball.principleRadianAngle(pi / 2.0 + refAngle)
-            else:
-                refAngle = 2 * pi - ball.angle
-                ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 - refAngle)
+            print("Wall collision RIGHT")
+            refAngle = 0.0 - ball.angle
+            ball.angle = Ball.principleRadianAngle(pi + refAngle)
         elif up >= TABLE_HEIGHT:
-            print("Wall collision")
-            if ball.angle < pi / 2.0:
-                refAngle = pi / 2.0 - ball.angle
-                ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 + refAngle)
-            else:
-                refAngle = ball.angle - pi / 2.0
-                ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 - refAngle)
+            print("Wall collision UP")
+            refAngle = pi / 2.0 - ball.angle
+            ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 + refAngle)
         elif down <= 0:
-            print("Wall collision")
-            if ball.angle > 3 * pi / 2.0:
-                refAngle = ball.angle - 3 * pi / 2.0
-                ball.angle = Ball.principleRadianAngle(refAngle)
-            else:
-                refAngle = 3 * pi / 2.0 - ball.angle
-                ball.angle = Ball.principleRadianAngle(pi - refAngle)
+            print("Wall collision DOWN")
+            refAngle = 3 * pi / 2.0 - ball.angle
+            ball.angle = Ball.principleRadianAngle(pi / 2.0 + refAngle)
 
         while (left < 0 or right > TABLE_WIDTH or down < 0 or up > TABLE_HEIGHT):
             x1 = ball.x
