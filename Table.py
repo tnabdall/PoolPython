@@ -54,13 +54,30 @@ def setRandomBalls():
 class Table:
     width = TABLE_WIDTH
     height = TABLE_HEIGHT
-    balls = setRandomBalls()
+    balls = setRandomBalls()  # randomly ordered except for blackBall which is balls[4]
     whiteBall = Ball.WhiteBall(TABLE_WIDTH / 4, TABLE_HEIGHT / 2)
+    pockets = [
+        [BALL_RADIUS, BALL_RADIUS],
+        [TABLE_WIDTH / 2, BALL_RADIUS],
+        [TABLE_WIDTH - BALL_RADIUS, BALL_RADIUS],
+        [BALL_RADIUS, TABLE_HEIGHT - BALL_RADIUS],
+        [TABLE_WIDTH / 2, TABLE_HEIGHT - BALL_RADIUS],
+        [TABLE_WIDTH - BALL_RADIUS, TABLE_HEIGHT - BALL_RADIUS],
+    ]
 
     # blackBall = balls[5]
 
     def __init__(self):
         pass
+
+    def checkPocketed(self, ball):
+        for i in np.arange(len(self.pockets)):
+            if sqrt((self.pockets[i][0] - ball.x) ** 2 + (self.pockets[i][1] - ball.y) ** 2) < BALL_RADIUS:
+                ball.pocketed = True
+                ball.x = -10
+                ball.y = -10
+                ball.speed = 0
+                ball.angle = 0
 
     def checkCollisionWall(self, ball):
 
