@@ -22,7 +22,7 @@ class Ball:
     speed = 0.0  # m/s
     angle = 0.0  # rads
     pocketed = False
-    timeDelta = 0.1  # s
+    timeDelta = 0.05  # s
     friction = 0.3  # (m/s^2)
     color = ""
 

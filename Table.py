@@ -6,22 +6,6 @@ from numpy import pi, sqrt
 TABLE_WIDTH = 400
 TABLE_HEIGHT = 200
 
-
-def getReferenceAngleRadians(angle):  # Gives reference angle in radians given radian angle
-    angle = Ball.principleRadianAngle(angle)
-    referenceAngle = 0
-    if (angle > np.pi * 3 / 2):
-        # referenceAngle = 2*pi-angle
-        referenceAngle = angle - pi
-    elif angle > pi:
-        referenceAngle = angle - pi
-    elif angle > pi / 2:
-        # referenceAngle = pi-angle
-        referenceAngle = angle
-    else:
-        referenceAngle = angle
-    return referenceAngle
-
 def setRandomBalls():
     width = TABLE_WIDTH
     height = TABLE_HEIGHT
@@ -55,14 +39,14 @@ def setRandomBalls():
     for i in np.arange(0, 14):
         id = randomizer[i]
         j = i
-        if (i > 4):
+        if (i > 3):
             j = i + 1
         if (id < 8):
             balls.append(Stripes(positions[j][0], positions[j][1], id))
         else:
             balls.append(Solids(positions[j][0], positions[j][1], id))
 
-    balls.append(BlackBall(positions[5][0], positions[5][1], 8))
+    balls.append(BlackBall(positions[4][0], positions[4][1], 8))
 
     return balls
 
@@ -72,6 +56,8 @@ class Table:
     height = TABLE_HEIGHT
     balls = setRandomBalls()
     whiteBall = Ball.WhiteBall(TABLE_WIDTH / 4, TABLE_HEIGHT / 2)
+
+    # blackBall = balls[5]
 
     def __init__(self):
         pass
@@ -84,19 +70,19 @@ class Table:
         down = ball.y - BALL_RADIUS
         refAngle = 0  # angle of reflection between ball and wall
         if (left <= 0):
-            print("Wall collision LEFT")
+            # print("Wall collision LEFT")
             refAngle = pi - ball.angle
             ball.angle = Ball.principleRadianAngle(refAngle)
         elif right >= TABLE_WIDTH:
-            print("Wall collision RIGHT")
+            # print("Wall collision RIGHT")
             refAngle = 0.0 - ball.angle
             ball.angle = Ball.principleRadianAngle(pi + refAngle)
         elif up >= TABLE_HEIGHT:
-            print("Wall collision UP")
+            # print("Wall collision UP")
             refAngle = pi / 2.0 - ball.angle
             ball.angle = Ball.principleRadianAngle(3 * pi / 2.0 + refAngle)
         elif down <= 0:
-            print("Wall collision DOWN")
+            # print("Wall collision DOWN")
             refAngle = 3 * pi / 2.0 - ball.angle
             ball.angle = Ball.principleRadianAngle(pi / 2.0 + refAngle)
 
@@ -127,13 +113,13 @@ class Table:
                 collisionAngle) * (b2.speed * math.sin(b2.angle - collisionAngle))
             vy2 = math.sin(collisionAngle) * (b1.speed * math.cos(b1.angle - collisionAngle)) + math.cos(
                 collisionAngle) * (b2.speed * math.sin(b2.angle - collisionAngle))
-            print("Collision Angle: " + str(collisionAngle * 180 / pi))
-            print(vx1, vy1, vx2, vy2)
+            # print("Collision Angle: " + str(collisionAngle * 180 / pi))
+            # print(vx1, vy1, vx2, vy2)
             b1.speed = math.sqrt(vx1 ** 2 + vy1 ** 2)
             b1.angle = Ball.principleRadianAngle(math.atan2(vy1, vx1))
             b2.speed = math.sqrt(vx2 ** 2 + vy2 ** 2)
             b2.angle = Ball.principleRadianAngle(math.atan2(vy2, vx2))
-            print(b1.speed, b1.angle * 180 / pi, b2.speed, b2.angle * 180 / pi)
+            # print(b1.speed, b1.angle * 180 / pi, b2.speed, b2.angle * 180 / pi)
 
             while (distance <= 2 * BALL_RADIUS):  # To split up the two balls
                 x1 = b1.x
@@ -143,7 +129,7 @@ class Table:
                 b1.updatePosition()
                 b2.updatePosition()
                 distance = np.sqrt((b1.x - b2.x) ** 2 + (b1.y - b2.y) ** 2)
-                print(b1.id, b1.x, b1.y, b2.id, b2.x, b2.y)
+                # print(b1.id, b1.x, b1.y, b2.id, b2.x, b2.y)
                 if b1.distance(Ball.Ball(x1, y1, -5)) / b1.timeDelta < 0.1 and b2.distance(
                         Ball.Ball(x2, y2, -5)) / b2.timeDelta < 0.1:
                     break
@@ -204,41 +190,6 @@ def main():
         # print(type(t.balls[i]) is Ball.Stripes) # checks to see if stripes
         print(t.balls[i], t.balls[i].x, t.balls[i].y, t.balls[i].id)
 
-
-def main2():
-    t = Table()
-    normalFactor = 5 / 0.12
-    t.balls[0].x = 0
-    t.balls[0].y = 0
-    t.balls[1].x = 0
-    t.balls[1].y = normalFactor * 1
-    v0x = normalFactor * 0
-    v0y = normalFactor * 2
-    v1x = normalFactor * 0
-    v1y = normalFactor * 0
-    v0 = np.sqrt(v0x ** 2 + v0y ** 2)
-    v1 = np.sqrt(v1x ** 2 + v1y ** 2)
-    angle0 = Ball.principleRadianAngle(np.arctan2(v0y, v0x))
-    angle1 = Ball.principleRadianAngle(np.arctan2(v1y, v1x))
-    t.balls[0].shoot(v0, angle0)
-    t.balls[1].shoot(v1, angle1)
-    print(t.balls[0].speed, t.balls[0].angle * 180 / pi)
-    print(t.balls[1].speed, t.balls[1].angle * 180 / pi)
-    while (t.balls[0].speed > 0.02 or t.balls[1].speed > 0.02):
-        t.checkCollision2Balls(t.balls[0], t.balls[1])
-        t.balls[0].updatePosition()
-        t.balls[1].updatePosition()
-        # print(t.balls[0].x, t.balls[0].y, t.balls[1].x, t.balls[1].y)
-    print(t.balls[0].speed, Ball.principleRadianAngle(t.balls[0].angle) * 180 / pi)
-    print(t.balls[1].speed, Ball.principleRadianAngle(t.balls[1].angle) * 180 / pi)
-    print(t.balls[0].x, t.balls[0].y, t.balls[1].x, t.balls[1].y)
-
-
-def main3():
-    t = Table()
-    for i in np.arange(len(t.balls)):
-        for j in np.arange(i, len(t.balls)):
-            print(i, j, t.balls[i].distance(t.balls[j]))
 
 if __name__ == "__main__":
     main()
