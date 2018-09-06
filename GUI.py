@@ -37,6 +37,8 @@ def shotRelease(event):
         gameGUI.after(int(0), animate)
     shootCoords.clear()
     canvas.itemconfig(poolStick, state="hidden")
+    if table.blackBallSunk():
+        canvas.create_text(tag="result", text="Player " + str(table.GameResult()) + " is the winner!", state="normal")
 
 
 # def drawBalls():
@@ -116,6 +118,9 @@ def shoot(power, angle):
         if (table.whiteBall.pocketed == True):
             ballcoords.append(["w", -10, -10])
 
+    table.switchTurn()
+    ballcoords.append(["w", table.whiteBall.x, table.whiteBall.y])
+
 
 
 
@@ -151,10 +156,16 @@ def main():
 
     # Create pockets
     for i in arange(len(table.pockets)):
-        canvas.create_oval(table.pockets[i][0] - BALL_RADIUS, TABLE_HEIGHT - (table.pockets[i][1] + BALL_RADIUS),
-                           table.pockets[i][0] + BALL_RADIUS, TABLE_HEIGHT - (table.pockets[i][1] - BALL_RADIUS),
+        canvas.create_oval(table.pockets[i][0] - 2 * BALL_RADIUS,
+                           TABLE_HEIGHT - (table.pockets[i][1] + 2 * BALL_RADIUS),
+                           table.pockets[i][0] + 2 * BALL_RADIUS,
+                           TABLE_HEIGHT - (table.pockets[i][1] - 2 * BALL_RADIUS),
                            tag="pocket" + str(i + 1),
                            fill="black")
+
+    # Result box
+    canvas.create_text(20, 30, anchor=W, font="Purisa",
+                       text="Player 1 Turn", state="normal", tag="turn")
 
         # Add events
     canvas.tag_bind("w", "<Double-1>", shootClickWhiteBall)

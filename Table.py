@@ -52,6 +52,17 @@ def setRandomBalls():
 
 
 class Table:
+    playerTurn = 1
+    player1Type = None
+    winner = None
+    scratch = False
+    firstCollide = None  # see what whiteball collides with first
+    numberPocketed = 0
+    numberPocketedLastTurn = 0
+    solidsPocketedLastTurn = 0
+    stripesPocketedLastTurn = 0
+    ballsPocketedThisTurn = []
+
     width = TABLE_WIDTH
     height = TABLE_HEIGHT
     balls = setRandomBalls()  # randomly ordered except for blackBall which is balls[4]
@@ -72,12 +83,24 @@ class Table:
 
     def checkPocketed(self, ball):
         for i in np.arange(len(self.pockets)):
-            if sqrt((self.pockets[i][0] - ball.x) ** 2 + (self.pockets[i][1] - ball.y) ** 2) < BALL_RADIUS:
+            if sqrt((self.pockets[i][0] - ball.x) ** 2 + (self.pockets[i][1] - ball.y) ** 2) < 2 * BALL_RADIUS:
                 ball.pocketed = True
                 ball.x = -10
                 ball.y = -10
                 ball.speed = 0
                 ball.angle = 0
+                self.numberPocketed += 1
+                self.ballsPocketedThisTurn.append(ball)
+
+                if type(ball) is Ball.Stripes:
+                    self.lastPocketed = "Stripes"
+                elif type(ball) is Ball.BlackBall:
+                    self.lastPocketed = "BlackBall"
+                elif type(ball) is Ball.Solids:
+                    self.lastPocketed = "Solids"
+                else:
+                    self.lastPocketed = "WhiteBall"
+
 
     def checkCollisionWall(self, ball):
 
@@ -114,12 +137,26 @@ class Table:
             up = ball.y + BALL_RADIUS
             down = ball.y - BALL_RADIUS
 
+    def switchTurn(self):
+        if self.playerTurn == 1:
+            self.playerTurn = 2
+        else:
+            self.playerTurn = 1
 
+        if (self.whiteBall.pocketed == True):
+            self.resetWhiteBall()
+
+        self.numberPocketedLastTurn = self.numberPocketed
+        self.solidsPocketedLastTurn = self.numberSolidsPocketed()
+        self.stripesPocketedLastTurn = self.numberStripesPocketed()
+        self.ballsPocketedThisTurn.clear()
+        firstCollide = None
 
     def checkCollision2Balls(self, b1, b2):
         distance = np.sqrt((b1.x - b2.x) ** 2 + (b1.y - b2.y) ** 2)
-
-        if distance <= 2 * BALL_RADIUS and (
+        if b1.x == -10 or b2.x == -10 or b1.y == -10 or b2.y == -10:
+            pass
+        elif distance <= 2 * BALL_RADIUS and (
                 b1.speed > 0.08 or b2.speed > 0.08):  # Checks if collided and whether the balls are going at a huge speed that would make them overlap
             collisionAngle = math.atan2(b2.y - b1.y, b2.x - b1.x)
             vx1 = math.cos(collisionAngle) * (b2.speed * math.cos(b2.angle - collisionAngle)) - math.sin(
@@ -138,6 +175,12 @@ class Table:
             b2.angle = Ball.principleRadianAngle(math.atan2(vy2, vx2))
             # print(b1.speed, b1.angle * 180 / pi, b2.speed, b2.angle * 180 / pi)
 
+            if self.firstCollide == None and (type(b1) is Ball.WhiteBall or type(b2) is Ball.WhiteBall):
+                if type(b1) is Ball.WhiteBall:
+                    firstCollide = type(b2)
+                else:
+                    firstCollide = type(b1)
+
             while (distance <= 2 * BALL_RADIUS):  # To split up the two balls
                 x1 = b1.x
                 y1 = b1.y
@@ -150,6 +193,144 @@ class Table:
                 if b1.distance(Ball.Ball(x1, y1, -5)) / b1.timeDelta < 0.1 and b2.distance(
                         Ball.Ball(x2, y2, -5)) / b2.timeDelta < 0.1:
                     break
+
+    def numberStripesPocketed(self):
+        x = 0
+        for i in np.arange(len(self.ballsPocketedThisTurn)):
+            if type(self.ballsPocketedThisTurn[i] is Ball.Stripes):
+                x += 1
+        return x
+
+    def numberSolidsPocketed(self):
+        x = 0
+        for i in np.arange(len(self.ballsPocketedThisTurn)):
+            if type(self.ballsPocketedThisTurn[i] is Ball.Solids):
+                x += 1
+        return x
+
+    def resetWhiteBall(self):
+        self.whiteBall.pocketed = False
+        self.whiteBall.x, self.whiteBall.y = TABLE_WIDTH / 4, TABLE_HEIGHT / 2
+
+    def checkScratch(self):
+        blackBallPocketed = self.blackBallSunk()
+        stripesPocketed = None
+        solidsPocketed = None
+        if self.numberStripesPocketed() - self.stripesPocketedLastTurn > 0:
+            stripesPocketed = True
+        else:
+            stripesPocketed = False
+
+        if self.numberSolidsPocketed() - self.solidsPocketedLastTurn > 0:
+            solidsPocketed = True
+        else:
+            solidsPocketed = False
+
+        typeToSink = None
+        if self.playerTurn == 1:
+            typeToSink = self.player1Type
+        else:
+            if self.player1Type == "Solids":
+                typeToSink = "Stripes"
+            elif self.player1Type == "Stripes":
+                typeToSink = "Solids"
+
+        if self.whiteBall.pocketed == True:  # First check
+            return True
+
+        elif self.firstCollide == None:
+            return True
+
+        elif self.firstCollide == BlackBall:
+            if typeToSink == "Stripes":
+                if self.numberStripesPocketed() < 7:
+                    return True
+            elif typeToSink == "Solids":
+                if self.numberSolidsPocketed() < 7:
+                    return True
+
+        elif self.firstCollide == Stripes:
+            if typeToSink == "Solids":
+                return True
+
+        elif self.firstCollide == Solids:
+            if typeToSink == "Stripes":
+                return True
+
+        elif typeToSink == "Solids":
+            if self.numberStripesPocketed() - self.stripesPocketedLastTurn > 0:
+                return True
+
+
+        elif typeToSink == "Stripes":
+            if self.numberSolidsPocketed() - self.solidsPocketedLastTurn > 0:
+                return True
+
+        elif self.player1Type == None and self.numberPocketed - self.numberPocketedLastTurn > 1:
+            ballType = type(self.ballsPocketedThisTurn[0])
+            for i in np.arange(len(self.ballsPocketedThisTurn)):
+                if ballType != type(self.ballsPocketedThisTurn[i]):
+                    return True
+
+        else:
+            return False
+
+            # else: # Not a scratch, so assign the type
+            #     if self.playerTurn == 1 and ballType is Ball.Solids:
+            #         self.player1Type = "Solids"
+            #     elif self.playerTurn == 2 and ballType is Ball.Solids:
+            #         self.player1Type = "Stripes"
+            #     elif self.playerTurn == 1 and ballType is Ball.Stripes:
+            #         self.player1Type = "Stripes"
+            #     elif self.playerTurn == 2 and ballType is Ball.Stripes:
+            #         self.player1Type = "Solids"
+
+    def blackBallSunk(self):
+        if (self.balls[4].pocketed == True):
+            return True
+        else:
+            return False
+
+    def GameResult(self):  # Called when black ball is sunk to see who wins.
+        # if self.blackBallSunk():
+        if self.checkScratch():
+            if self.playerTurn == 1:
+                return 2
+            else:
+                return 1
+        else:
+            if self.playerTurn == 1:
+                if self.player1Type == "Solids":
+                    if self.numberSolidsPocketed() == 7:
+                        return 1
+                    else:
+                        return 2
+                elif self.player1Type == "Stripes":
+                    if self.numberStripesPocketed() == 7:
+                        return 1
+                    else:
+                        return 2
+            else:
+                player2Type = None
+                if self.player1Type == "Solids":
+                    player2Type = "Stripes"
+                elif self.player1Type == "Stripes":
+                    player2Type = "Solids"
+
+                if player2Type == "Stripes":
+                    if self.numberStripesPocketed() == 7:
+                        return 2
+                    else:
+                        return 1
+                elif player2Type == "Solids":
+                    if self.numberSolidsPocketed() == 7:
+                        return 2
+                    else:
+                        return 1
+
+
+
+
         # elif distance <= 2 * BALL_RADIUS and (b1.speed>0.02 or b2.speed>0.02):
         #     if b1.speed>0.02:
         #         movingBall = b1
