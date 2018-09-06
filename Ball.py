@@ -1,6 +1,6 @@
 import math
 
-BALL_RADIUS = 5.0  # m
+BALL_RADIUS = 8.0  # m
 
 def principleRadianAngle(angle):
     if angle > 2 * math.pi:
@@ -69,6 +69,8 @@ class Ball:
             self.x = self.x + self.speed * math.cos(self.angle) * self.timeDelta
             self.y = self.y + self.speed * math.sin(self.angle) * self.timeDelta
             self.speed = self.speed - self.friction * self.timeDelta
+        else:
+            self.speed = 0
 
     # def updateCollision(self,speed,angle): #for when we know the ball has collided
     #     self.speed = speed

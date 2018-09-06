@@ -22,12 +22,13 @@ def drawStick(event):
 
 def shotClick(event):
     shootCoords.append([event.x, event.y])
-    print(event.x, event.y)
+    # print(event.x, event.y)
 
 
 def shotRelease(event):
     shootCoords.append([event.x, event.y])
-    print(event.x, event.y)
+    # print(event.x, event.y)
+
     if (sqrt((shootCoords[0][1] - shootCoords[1][1]) ** 2 + (shootCoords[0][0] - shootCoords[1][0]) ** 2) > 10):
         ang = arctan2(-shootCoords[0][1] + shootCoords[1][1], shootCoords[0][0] - shootCoords[1][0])
         pow = spring_k / 2 * (
@@ -35,10 +36,28 @@ def shotRelease(event):
         shoot(min(pow, 20), ang)
         print(pow, ang * 180 / pi)
         gameGUI.after(int(0), animate)
+
+    table.checkScratch()
+    table.checkPlayer1Type()
+    if table.whiteBall.pocketed == True:
+        print("WB pocket")
+        table.resetWhiteBall()
+        ballcoords.append(["w", table.whiteBall.x, table.whiteBall.y])
+        gameGUI.after(int(0), animate)
     shootCoords.clear()
     canvas.itemconfig(poolStick, state="hidden")
-    if table.blackBallSunk():
-        canvas.create_text(tag="result", text="Player " + str(table.GameResult()) + " is the winner!", state="normal")
+
+    print(table.blackBallSunk())
+
+    if table.blackBallSunk() is True:
+        print("Black Ball sunk")
+        pocketBall("solid8")
+        print("Player " + str(table.GameResult()) + " is the winner!")
+        canvas.create_text(20, 100, anchor=W, font="Purisa",
+                           text="Player " + str(table.GameResult()) + " is the winner!", state="normal", tag="result")
+
+    table.switchTurn()
+    canvas.itemconfig("turn", text="Player " + str(table.playerTurn) + " Turn")
 
 
 # def drawBalls():
@@ -54,14 +73,15 @@ def animate():
     if len(ballcoords) == 0:
         return
     else:
-        print(ballcoords[0][0])
+        # print(ballcoords[0][0])
         if ballcoords[0][0] == "w":
             canvas.coords("w", ballcoords[0][1] - BALL_RADIUS, TABLE_HEIGHT - (ballcoords[0][2] + BALL_RADIUS),
                           ballcoords[0][1] + BALL_RADIUS, TABLE_HEIGHT - (ballcoords[0][2] - BALL_RADIUS))
             for i in arange(len(table.pockets)):
                 if sqrt((ballcoords[0][1] - table.pockets[i][0]) ** 2 + (
-                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < BALL_RADIUS:
-                    pocketBall("w")
+                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < 2 * BALL_RADIUS:
+                    # pocketBall("w")
+                    pass
         else:
             canvas.coords(ballcoords[0][0], ballcoords[0][1] - BALL_RADIUS,
                           TABLE_HEIGHT - (ballcoords[0][2] + BALL_RADIUS),
@@ -70,7 +90,7 @@ def animate():
                 if (ballcoords[0][0] == -10 or ballcoords[0][1] == -10):
                     pocketBall(ballcoords[0][0])
                 if sqrt((ballcoords[0][1] - table.pockets[i][0]) ** 2 + (
-                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < BALL_RADIUS:
+                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < 2 * BALL_RADIUS:
                     pocketBall(ballcoords[0][0])
         ballcoords.pop(0)
         gameGUI.after(int(1), animate)
@@ -92,9 +112,9 @@ def shoot(power, angle):
                 # print(i,j)
             table.balls[i].updatePosition()
             table.checkPocketed(table.balls[i])
-            if table.balls[i].pocketed == True and type(table.balls[i]) is (Ball.Solids or Ball.BlackBall):
+            if table.balls[i].pocketed is True and type(table.balls[i]) is (Ball.Solids or Ball.BlackBall):
                 ballcoords.append(["solid" + str(table.balls[i].id), -10, -10])
-            elif table.balls[i].pocketed == True:
+            elif table.balls[i].pocketed is True:
                 ballcoords.append(["stripe" + str(table.balls[i].id), -10, -10])
 
                 # if type(table.balls[i]) is (Ball.Solids or Ball.BlackBall):
@@ -118,7 +138,6 @@ def shoot(power, angle):
         if (table.whiteBall.pocketed == True):
             ballcoords.append(["w", -10, -10])
 
-    table.switchTurn()
     ballcoords.append(["w", table.whiteBall.x, table.whiteBall.y])
 
 
