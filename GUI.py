@@ -58,6 +58,8 @@ def shotRelease(event):
 
     table.switchTurn()
     canvas.itemconfig("turn", text="Player " + str(table.playerTurn) + " Turn")
+    canvas.itemconfig("turn", state="normal")
+    # gameGUI.after(2000, lambda: canvas.itemconfig("turn", state="hidden"))
 
 
 # def drawBalls():
@@ -94,6 +96,8 @@ def animate():
                     pocketBall(ballcoords[0][0])
         ballcoords.pop(0)
         gameGUI.after(int(1), animate)
+        print(table.solidsPocketedLastTurn)
+        print(table.stripesPocketedLastTurn)
 
 
 def pocketBall(tag):
@@ -156,7 +160,7 @@ def main():
             ballsCanvas.append(
                 canvas.create_oval(table.balls[i].x - BALL_RADIUS, TABLE_HEIGHT - (table.balls[i].y + BALL_RADIUS),
                                    table.balls[i].x + BALL_RADIUS, TABLE_HEIGHT - (table.balls[i].y - BALL_RADIUS),
-                                   tag="stripe" + str(table.balls[i].id), fill=table.balls[i].color, dash=(1, 4)))
+                                   tag="stripe" + str(table.balls[i].id), fill=table.balls[i].color, width=2))
             # print(table.balls[i].x-BALL_RADIUS,TABLE_HEIGHT - table.balls[i].y, # make stripes
             #             table.balls[i].x+BALL_RADIUS,TABLE_HEIGHT - table.balls[i].y)
             # canvas.create_line(table.balls[i].x-BALL_RADIUS,TABLE_HEIGHT - table.balls[i].y, # make stripes
