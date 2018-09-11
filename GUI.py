@@ -59,6 +59,7 @@ def shotRelease(event):
     table.switchTurn()
     canvas.itemconfig("turn", text="Player " + str(table.playerTurn) + " Turn")
     canvas.itemconfig("turn", state="normal")
+    gameGUI.title("Player 1 is " + str(table.player1Type))
     # gameGUI.after(2000, lambda: canvas.itemconfig("turn", state="hidden"))
 
 
@@ -76,28 +77,34 @@ def animate():
         return
     else:
         # print(ballcoords[0][0])
-        if ballcoords[0][0] == "w":
-            canvas.coords("w", ballcoords[0][1] - BALL_RADIUS, TABLE_HEIGHT - (ballcoords[0][2] + BALL_RADIUS),
-                          ballcoords[0][1] + BALL_RADIUS, TABLE_HEIGHT - (ballcoords[0][2] - BALL_RADIUS))
+        numberToAnimate = 1  # stores coordinates for different balls to animate at the same time
+        for i in arange(1, len(ballcoords)):
+            brake = False  # to break out of loop
+            for j in arange(i):
+                if ballcoords[i][0] == ballcoords[j][0]:
+                    brake = True
+                    break
+            if brake is True:
+                break
+            else:
+                numberToAnimate += 1
+
+        for k in arange(numberToAnimate):
+            canvas.coords(ballcoords[k][0], ballcoords[k][1] - BALL_RADIUS,
+                          TABLE_HEIGHT - (ballcoords[k][2] + BALL_RADIUS),
+                          ballcoords[k][1] + BALL_RADIUS, TABLE_HEIGHT - (ballcoords[k][2] - BALL_RADIUS))
             for i in arange(len(table.pockets)):
-                if sqrt((ballcoords[0][1] - table.pockets[i][0]) ** 2 + (
-                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < 2 * BALL_RADIUS:
-                    # pocketBall("w")
-                    pass
-        else:
-            canvas.coords(ballcoords[0][0], ballcoords[0][1] - BALL_RADIUS,
-                          TABLE_HEIGHT - (ballcoords[0][2] + BALL_RADIUS),
-                          ballcoords[0][1] + BALL_RADIUS, TABLE_HEIGHT - (ballcoords[0][2] - BALL_RADIUS))
-            for i in arange(len(table.pockets)):
-                if (ballcoords[0][0] == -10 or ballcoords[0][1] == -10):
-                    pocketBall(ballcoords[0][0])
-                if sqrt((ballcoords[0][1] - table.pockets[i][0]) ** 2 + (
-                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < 2 * BALL_RADIUS:
-                    pocketBall(ballcoords[0][0])
-        ballcoords.pop(0)
-        gameGUI.after(int(1), animate)
-        print(table.solidsPocketedLastTurn)
-        print(table.stripesPocketedLastTurn)
+                if ballcoords[k][0] != "w" and (ballcoords[k][1] == -10 or ballcoords[k][2] == -10):
+                    pocketBall(ballcoords[k][0])
+                if sqrt((ballcoords[k][1] - table.pockets[i][0]) ** 2 + (
+                        ballcoords[k][2] - table.pockets[i][1]) ** 2) < 2 * BALL_RADIUS:
+                    pocketBall(ballcoords[k][0])
+
+        for k in arange(numberToAnimate):
+            ballcoords.pop(0)
+        gameGUI.after(int(2), animate)
+        # print(table.solidsPocketedLastTurn)
+        # print(table.stripesPocketedLastTurn)
 
 
 def pocketBall(tag):
@@ -160,7 +167,7 @@ def main():
             ballsCanvas.append(
                 canvas.create_oval(table.balls[i].x - BALL_RADIUS, TABLE_HEIGHT - (table.balls[i].y + BALL_RADIUS),
                                    table.balls[i].x + BALL_RADIUS, TABLE_HEIGHT - (table.balls[i].y - BALL_RADIUS),
-                                   tag="stripe" + str(table.balls[i].id), fill=table.balls[i].color, width=2))
+                                   tag="stripe" + str(table.balls[i].id), fill=table.balls[i].color, outline="white"))
             # print(table.balls[i].x-BALL_RADIUS,TABLE_HEIGHT - table.balls[i].y, # make stripes
             #             table.balls[i].x+BALL_RADIUS,TABLE_HEIGHT - table.balls[i].y)
             # canvas.create_line(table.balls[i].x-BALL_RADIUS,TABLE_HEIGHT - table.balls[i].y, # make stripes
