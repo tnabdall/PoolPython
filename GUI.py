@@ -13,6 +13,8 @@ ballcoords = []
 spring_k = 0.02
 shootCoords = []
 poolStick = canvas.create_line(0, 0, 1, 1, fill="white", tag="stick")
+timer = 0.0
+timerDelta = 1/60
 
 
 def drawStick(event):
@@ -72,7 +74,7 @@ def shotRelease(event):
 #     canvas.pack()
 
 
-def animate():
+def animate2():
     if len(ballcoords) == 0:
         return
     else:
@@ -106,12 +108,48 @@ def animate():
         # print(table.solidsPocketedLastTurn)
         # print(table.stripesPocketedLastTurn)
 
+def animate():
+    if len(ballcoords) == 0:
+        return
+    else:
+        global timer
+        timer+=timerDelta
+
+        while(ballcoords[0][3]<timer):
+            canvas.coords(ballcoords[0][0], ballcoords[0][1] - BALL_RADIUS,
+                          TABLE_HEIGHT - (ballcoords[0][2] + BALL_RADIUS),
+                          ballcoords[0][1] + BALL_RADIUS, TABLE_HEIGHT - (ballcoords[0][2] - BALL_RADIUS))
+            ballcoords.pop(0)
+            for i in arange(len(table.pockets)):
+                if ballcoords[0][0] != "w" and (ballcoords[0][1] == -10 or ballcoords[0][2] == -10):
+                    pocketBall(ballcoords[0][0])
+                if sqrt((ballcoords[0][1] - table.pockets[i][0]) ** 2 + (
+                        ballcoords[0][2] - table.pockets[i][1]) ** 2) < 2 * BALL_RADIUS:
+                    pocketBall(ballcoords[0][0])
+
+        gameGUI.after(int(2), animate)
+
+def addCoords(coords, ballData):
+    index = len(coords)-1
+    if index==-1:
+        coords.append(ballData)
+        return
+    while(index>=0):
+        if ballData[3]<coords[index][3]:
+            index-=1
+        else:
+            coords.insert(index+1,ballData)
+            break
+    if index==-1:
+        coords.insert(index+1,ballData)
+
 
 def pocketBall(tag):
     canvas.itemconfig(tag, state="hidden")
 
 def shoot(power, angle):
     table.whiteBall.shoot(power, angle)
+    global timer
     while (any(ball.speed >= 0.08 for ball in table.balls) or table.whiteBall.speed > 0.08):
         table.checkCollisionWall(table.whiteBall)
         for i in arange(15):
@@ -124,32 +162,37 @@ def shoot(power, angle):
             table.balls[i].updatePosition()
             table.checkPocketed(table.balls[i])
             if table.balls[i].pocketed is True and type(table.balls[i]) is (Ball.Solids or Ball.BlackBall):
-                ballcoords.append(["solid" + str(table.balls[i].id), -10, -10])
+                addCoords(ballcoords,["solid" + str(table.balls[i].id), -10, -10,table.balls[i].timer])
             elif table.balls[i].pocketed is True:
-                ballcoords.append(["stripe" + str(table.balls[i].id), -10, -10])
+                addCoords(ballcoords,["stripe" + str(table.balls[i].id), -10, -10,table.balls[i].timer])
 
                 # if type(table.balls[i]) is (Ball.Solids or Ball.BlackBall):
             #     pocketBall("solid" + str(table.balls[i].id))
             # else:
             #     pocketBall("stripe" + str(table.balls[i].id))
 
-            if (table.balls[i].speed > 0.08):
+            if (table.balls[i].speed > 0.08 and timer>table.balls[i].timer):
                 if type(table.balls[i]) is Ball.Solids:
-                    ballcoords.append(["solid" + str(table.balls[i].id), table.balls[i].x, table.balls[i].y])
+                    addCoords(ballcoords,["solid" + str(table.balls[i].id), table.balls[i].x, table.balls[i].y,table.balls[i].timer])
                 elif type(table.balls[i]) is Ball.BlackBall:
-                    ballcoords.append(["solid" + str(table.balls[i].id), table.balls[i].x, table.balls[i].y])
+                    addCoords(ballcoords,["solid" + str(table.balls[i].id), table.balls[i].x, table.balls[i].y,table.balls[i].timer])
                 else:
-                    ballcoords.append(["stripe" + str(table.balls[i].id), table.balls[i].x, table.balls[i].y])
+                    addCoords(ballcoords,["stripe" + str(table.balls[i].id), table.balls[i].x, table.balls[i].y,table.balls[i].timer])
             # canvas.move(str(i+1),table.balls[i].speedX()*table.balls[i].timeDelta,(-1)*table.balls[i].speedY()*table.balls[i].timeDelta)
         table.whiteBall.updatePosition()
         table.checkPocketed(table.whiteBall)
         # pocketBall(table.whiteBall,"w")
-        if (table.whiteBall.speed > 0.08):
-            ballcoords.append(["w", table.whiteBall.x, table.whiteBall.y])
+        if (table.whiteBall.speed > 0.08 and timer>table.whiteBall.timer):
+            addCoords(ballcoords,["w", table.whiteBall.x, table.whiteBall.y,table.whiteBall.timer])
         if (table.whiteBall.pocketed == True):
-            ballcoords.append(["w", -10, -10])
+            addCoords(ballcoords,["w", -10, -10,table.whiteBall.timer])
+        timer+=1/59
 
-    ballcoords.append(["w", table.whiteBall.x, table.whiteBall.y])
+    addCoords(ballcoords,["w", table.whiteBall.x, table.whiteBall.y,table.whiteBall.timer])
+    timer = 0
+    for ball in [*table.balls,table.whiteBall]:
+        ball.timer=0
+    
 
 
 
@@ -161,6 +204,8 @@ def shootClickWhiteBall(event):
 
 def main():
     # Create ball objects and tags
+    global timer
+    timer = 0
     for i in arange(len(table.balls)):
         if type(table.balls[i]) is Ball.Stripes:
             # print ("Stripes")
